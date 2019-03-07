@@ -1,0 +1,43 @@
+import errors ;
+import modules ;
+import os ;
+import python ;
+
+
+BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
+if ! $(BOOST_ROOT)
+{
+	import errors ;
+	errors.user-error : "Environment variable BOOST_ROOT not set." ;
+}
+
+
+# Configure python
+if ! [ python.configured ]
+{
+    local location = [ errors.nearest-user-location ] ;
+    echo info at $(location): Python module not configured in 'user-config.jam'. Try 'using python ;'... ;
+    using python ;
+}
+
+
+# Set up Boost.Build module search path
+modules.poke : BOOST_BUILD_PATH : ./jam [ modules.peek : BOOST_BUILD_PATH ] ;
+
+
+use-project boost : $(BOOST_ROOT) ;
+
+
+project asyncronizer
+	: build-dir build
+	:
+		requirements
+		<include>include
+		<include>$(BOOST_ROOT)
+	;
+
+
+build-project ext_src ;
+
+alias install-ext : ext_src//install-ext ;
+explicit install-ext ;

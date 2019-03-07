@@ -1,0 +1,15 @@
+# Hidden files and directories
+.*
+
+# But not git files
+!.git*
+
+# Build results
+build/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

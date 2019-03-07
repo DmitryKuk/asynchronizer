@@ -1,0 +1,24 @@
+import pybind11 ;
+
+
+pybind11.python-extension _asyncronizer
+    :
+        [ glob *.cpp : test_* tool_* ]
+        /boost//system/<link>static
+    : <define>WITH_THREADS=1
+    ;
+
+
+pybind11.python-extension test_module_async_sleep
+    :
+        test_module_async_sleep.cpp
+        /boost//system/<link>static
+    : <define>WITH_THREADS=1
+    ;
+
+
+install install-ext
+    : _asyncronizer
+    : <location>../build/ext <install-dependencies>on <install-type>LIB
+    ;
+explicit install-ext ;

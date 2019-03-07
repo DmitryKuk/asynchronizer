@@ -1,0 +1,52 @@
+import errors ;
+import feature ;
+import python : python-extension : python-extension-impl ;
+import regex ;
+import toolset ;
+
+
+local target-os = [ feature.get-values target-os ] ;
+target-os ?= [ feature.defaults target-os ] ;
+target-os = $(target-os:G=) ;
+
+local toolset-requirements = [ toolset.requirements ] ;
+local python-requirements = [ $(toolset-requirements).get <python> ] ;
+local parsed-python-requirements = [ regex.match "^([0-9]+)\\.([0-9]+),(.+)$" : $(python-requirements) ] ;
+local python-major = $(parsed-python-requirements[1]) ;
+local python-minor = $(parsed-python-requirements[2]) ;
+
+local python-interpreter-pattern = "^<target-os>$(target-os):<python.interpreter>(.+)$" ;
+python-interpreter = [ MATCH "$(python-interpreter-pattern)" : $(parsed-python-requirements[3]) ] ;
+if ! $(python-interpreter)
+{
+    errors.user-error
+        No python interpreter parsed from string: '$(parsed-python-requirements[3])'
+        by pattern '$(python-interpreter-pattern)'
+        ;
+}
+
+
+rule python-extension ( name : sources * : requirements * : default-build * : usage-requirements * : includes * )
+{
+    if ! $(includes)
+    {
+        includes = [ SHELL "$(python-interpreter) -m pybind11 --includes" : strip-eol ] ;
+        if ! $(includes)
+        {
+            errors.error
+                  Unable to get pybind11 includes
+                : "  'which $(python-interpreter)':" [ SHELL "which $(python-interpreter)" : strip-eol ]
+                : "  '$(python-interpreter) --version':" [ SHELL "$(python-interpreter) --version" : strip-eol ]
+                ;
+        }
+        includes = [ regex.split $(includes) " " ] ;
+    }
+
+    local flags ;
+    for include-flag in $(includes)
+    {
+        flags += <cflags>$(include-flag) <cxxflags>$(include-flag) ;
+    }
+
+    python-extension-impl $(name) : $(sources) : $(requirements) $(flags) : $(default-build) : $(usage-requirements) ;
+}
