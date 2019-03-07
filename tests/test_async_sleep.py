@@ -26,7 +26,6 @@ class TestAsyncSleep(asynctest.TestCase):
 
     def test_async_wait_lowlevel(self) -> None:
         timeout = 1
-
         on_ready = asynctest.MagicMock()
         timer = test_module_async_sleep.SystemTimer(io_context=self._io_context, seconds=timeout)
         timer.async_wait(on_ready=on_ready)
@@ -44,10 +43,11 @@ class TestAsyncSleep(asynctest.TestCase):
         self.assertEqual(0, error_code.value)
 
     async def test_async_wait_highlevel(self) -> None:
-        timeout = 1
+        asyncronizer_ = asyncronizer.Asyncronizer(loop=self.loop)
 
+        timeout = 1
         timer = test_module_async_sleep.SystemTimer(io_context=self._io_context, seconds=timeout)
-        future = asyncronizer.call_async(timer.async_wait, loop=self.loop)
+        future = asyncronizer_.call_async(timer.async_wait)
 
         time.sleep(3)
         error_code = await future
@@ -56,16 +56,15 @@ class TestAsyncSleep(asynctest.TestCase):
         self.assertEqual(0, error_code.value)
 
     async def test_async_wait_gather(self) -> None:
+        asyncronizer_ = asyncronizer.Asyncronizer(loop=self.loop)
+
         tests = 10
         timeouts = [random.uniform(0.5, 5) for _ in range(tests)]
         timers = [
             test_module_async_sleep.SystemTimer(io_context=self._io_context, seconds=timeout)
             for timeout in timeouts
         ]
-
-        error_codes = await asyncio.gather(
-            *(asyncronizer.call_async(timer.async_wait, loop=self.loop) for timer in timers)
-        )
+        error_codes = await asyncio.gather(*(asyncronizer_.call_async(timer.async_wait) for timer in timers))
 
         for timer_index, (timeout, error_code) in enumerate(zip(timeouts, error_codes)):
             with self.subTest(timer=timer_index, timeout=timeout, error_code=error_code):
