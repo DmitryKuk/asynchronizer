@@ -21,7 +21,7 @@ namespace py = pybind11;
 using namespace py::literals;
 
 
-PYBIND11_MODULE(_asyncronizer, module)
+PYBIND11_MODULE(_asyncronizer_ext, module)
 {
     module.doc() = "dkuk::asyncronizer C++ internals: Python asyncio <-> C++ Boost.Asio bridge";
 

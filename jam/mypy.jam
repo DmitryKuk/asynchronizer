@@ -1,0 +1,104 @@
+import errors ;
+import feature ;
+import python : python-extension : python-extension-impl ;
+import regex ;
+import toolset ;
+import project ;
+import type ;
+import targets ;
+import generators ;
+import "class" : new ;
+
+
+local target-os = [ feature.get-values target-os ] ;
+target-os ?= [ feature.defaults target-os ] ;
+target-os = $(target-os:G=) ;
+
+local toolset-requirements = [ toolset.requirements ] ;
+local python-requirements = [ $(toolset-requirements).get <python> ] ;
+local parsed-python-requirements = [ regex.match "^([0-9]+)\\.([0-9]+),(.+)$" : $(python-requirements) ] ;
+local python-major = $(parsed-python-requirements[1]) ;
+local python-minor = $(parsed-python-requirements[2]) ;
+
+local python-interpreter-pattern = "^<target-os>$(target-os):<python.interpreter>(.+)$" ;
+python-interpreter = [ MATCH "$(python-interpreter-pattern)" : $(parsed-python-requirements[3]) ] ;
+if ! $(python-interpreter)
+{
+    errors.user-error
+        No python interpreter parsed from string: '$(parsed-python-requirements[3])'
+        by pattern '$(python-interpreter-pattern)'
+        ;
+}
+
+
+local mypy-installation = [ SHELL "$(python-interpreter) -m pip show mypy" : strip-eol ] ;
+if mypy-installation
+{
+    local mypy-location = [ MATCH "^.*Location: ([^\n]*).*$" : $(mypy-installation) ] ;
+    mypy-stubgen = "$(mypy-location)/mypy/stubgen.py" ;
+
+    type.register PYTHON_STUB ;
+    type.set-generated-target-suffix PYTHON_STUB : : pyi ;
+
+    class python-stub-generator : generator
+    {
+        import "class" : new ;
+        import errors ;
+
+        rule __init__ ( * : * )
+        {
+            generator.__init__ $(1) : $(2) : $(3) : $(4) : $(5) : $(6) : $(7) : $(8) : $(9) ;
+        }
+
+        rule run ( project name ? : property-set : sources * )
+        {
+            if $(sources[2])
+            {
+                errors.error "Single source required." ;
+            }
+
+            local source-type = [ $(sources[1]).type ] ;
+            if "$(source-type)" != PYTHON_EXTENSION
+            {
+                errors.user-warning "Incorrect source type: expected PYTHON_EXTENSION." ;
+                errors.user-error "Given type: $(source-type)." ;
+            }
+
+            if ! $(name)
+            {
+                name = [ generator.determine-output-name $(sources) ] ;
+            }
+
+            local a = [ new action "$(sources[1])" : mypy.generate-python-stub : $(property-set) ] ;
+            local t = [ new file-target "$(name)" : PYTHON_STUB : $(project) : $(a) ] ;
+            return [ virtual-target.register $(t) ] ;
+        }
+    }
+
+    generators.register [ new python-stub-generator mypy.mypy : PYTHON_EXTENSION : PYTHON_STUB ] ;
+
+    actions generate-python-stub
+    {
+        "$(python-interpreter)" -B -q "jam/scripts/stubgensowrapper.py" \
+            --stubgen "$(mypy-stubgen)" --input "$(>)" --output "$(<)"
+    }
+
+    rule python-stub ( name : python-extension )
+    {
+        targets.main-target-alternative
+            [
+                new typed-target $(python-extension).name
+                    : [ project.current ]
+                    : PYTHON_STUB
+                    : [ targets.main-target-sources $(python-extension) : $(name) ]
+            ]
+            ;
+    }
+}
+else
+{
+    rule python-stub ( name : python-extension )
+    {
+        errors.user-warning "MyPy not found, stubs for Python extensions can not be generated." ;
+    }
+}

@@ -1,9 +1,10 @@
 import asyncio
+import concurrent.futures
 import functools
 import threading
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, MutableSet, List, Tuple
 
-from _asyncronizer import Thread, IoContext, ErrorCategory, ErrorCode
+from _asyncronizer_ext import Thread, IoContext, ErrorCategory, ErrorCode
 
 
 __all__ = ['Thread', 'IoContext', 'ErrorCategory', 'ErrorCode', 'Asyncronizer']
@@ -85,9 +86,9 @@ class _ReadyQueue:
     def __init__(self, loop: asyncio.AbstractEventLoop) -> None:
         self.loop = loop
         self._lock = threading.Lock()
-        self._ready_callbacks = set()
-        self._ready = []
-        self._set_results_job = None
+        self._ready_callbacks: MutableSet[Callable[..., None]] = set()
+        self._ready: List[Tuple[concurrent.futures.Future, Any]] = []
+        self._set_results_job: Optional[concurrent.futures.Future] = None
 
     def prepare(self, future: asyncio.Future, default: Any, pack_single: bool) -> Callable[..., None]:
         on_ready = functools.partial(self._on_ready, future=future, default=default, pack_single=pack_single)

@@ -14,9 +14,9 @@ namespace py = pybind11;
 using namespace py::literals;
 
 
-PYBIND11_MODULE(test_module_async_sleep, module)
+PYBIND11_MODULE(test_async_sleep_ext, module)
 {
-    module.doc() = "test_module_async_sleep module";
+    module.doc() = "test_async_sleep_ext module";
 
     dkuk::asyncronizer::shared_ptr_managed_class<boost::asio::system_timer>{module, "SystemTimer"}
         .def(
