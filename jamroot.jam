@@ -41,3 +41,6 @@ build-project ext_src ;
 
 alias install-ext : ext_src//install-ext ;
 explicit install-ext ;
+
+alias install-stub : ext_src//install-stub ;
+explicit install-stub ;
