@@ -64,18 +64,12 @@ if mypy-installation
                 errors.user-error "Given type: $(source-type)." ;
             }
 
-            if ! $(name)
-            {
-                name = [ generator.determine-output-name $(sources) ] ;
-            }
-
+            local file-name = [ generator.determine-output-name $(sources) ] ;
             local a = [ new action "$(sources[1])" : mypy.generate-python-stub : $(property-set) ] ;
-            local t = [ new file-target "$(name)" : PYTHON_STUB : $(project) : $(a) ] ;
+            local t = [ new file-target "$(file-name)" : PYTHON_STUB : $(project) : $(a) ] ;
             return [ virtual-target.register $(t) ] ;
         }
     }
-
-    generators.register [ new python-stub-generator mypy.mypy : PYTHON_EXTENSION : PYTHON_STUB ] ;
 
     actions generate-python-stub
     {
@@ -83,11 +77,13 @@ if mypy-installation
             --stubgen "$(mypy-stubgen)" --input "$(>)" --output "$(<)"
     }
 
+    generators.register [ new python-stub-generator mypy.mypy : PYTHON_EXTENSION : PYTHON_STUB ] ;
+
     rule python-stub ( name : python-extension )
     {
         targets.main-target-alternative
             [
-                new typed-target $(python-extension).name
+                new typed-target "$(name)"
                     : [ project.current ]
                     : PYTHON_STUB
                     : [ targets.main-target-sources $(python-extension) : $(name) ]

@@ -18,17 +18,19 @@ parser.add_argument('--input', metavar='SO_PATH', type=str, required=True, help=
 parser.add_argument('--output', metavar='PYI_PATH', type=str, required=True, help='Output .pyi file path')
 args = parser.parse_args(argv[1:])
 
+output_file = abspath(args.output)
+
 
 # Remove cached results
 try:
-    s = stat_fn(args.output)
+    s = stat_fn(output_file)
 except FileNotFoundError:
     pass
 else:
     if S_ISDIR(s.st_mode):
-        rmtree(args.output)
+        rmtree(output_file)
     else:
-        unlink(args.output)
+        unlink(output_file)
 
 
 # Modify PYTHONPATH to make module visible for stubgen
@@ -47,7 +49,7 @@ env['PYTHONPATH'] = python_path
 stubgen_process = Popen(
     [
         executable, '-B', '-q', args.stubgen,
-        '--output', abspath(dirname(args.output)),
+        '--output', dirname(output_file),
         '-m', splitext(basename(args.input))[0],
     ],
     stdout=PIPE,
@@ -59,7 +61,7 @@ stubgen_stdout, stubgen_stderr = stubgen_process.communicate()
 
 # Print error message, if need
 return_code = 0
-if not exists(args.output):
+if not exists(output_file):
     print('Output file not created!', file=stderr)
     return_code = 1
 
@@ -75,3 +77,5 @@ if return_code != 0:
     if stubgen_stdout:
         print('Stubgen stdout:', file=stderr)
         print(indent(stubgen_stdout.decode(), '    '), file=stderr)
+
+    exit(return_code)
