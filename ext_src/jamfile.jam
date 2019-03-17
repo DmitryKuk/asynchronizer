@@ -1,5 +1,5 @@
-import pybind11 ;
-import mypy ;
+import ../jam/pybind11 ;
+import ../jam/mypy ;
 
 
 pybind11.python-extension _asyncronizer_ext

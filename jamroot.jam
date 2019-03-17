@@ -21,8 +21,11 @@ if ! [ python.configured ]
 }
 
 
+path-constant ASYNCHRONIZER_ROOT : . ;
+
+
 # Set up Boost.Build module search path
-modules.poke : BOOST_BUILD_PATH : ./jam [ modules.peek : BOOST_BUILD_PATH ] ;
+modules.poke : BOOST_BUILD_PATH : "$(ASYNCHRONIZER_ROOT)/jam" [ modules.peek : BOOST_BUILD_PATH ] ;
 
 
 use-project boost : $(BOOST_ROOT) ;
