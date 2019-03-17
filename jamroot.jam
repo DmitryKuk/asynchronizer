@@ -57,7 +57,7 @@ path-constant ASYNCHRONIZER_ROOT : . ;
 modules.poke : BOOST_BUILD_PATH : "$(ASYNCHRONIZER_ROOT)/jam" [ modules.peek : BOOST_BUILD_PATH ] ;
 
 
-use-project boost : $(BOOST_ROOT) ;
+use-project boost : "$(BOOST_ROOT)" ;
 
 
 project asynchronizer
@@ -65,7 +65,7 @@ project asynchronizer
     :
         requirements
         <include>"$(ASYNCHRONIZER_ROOT)/include"
-        <include>$(BOOST_ROOT)
+        <include>"$(BOOST_ROOT)"
     ;
 
 
