@@ -14,23 +14,23 @@
 
 #include <pybind11/pybind11.h>
 
-#include <dkuk/asyncronizer/asyncronizer.hpp>
+#include <dkuk/asynchronizer/asynchronizer.hpp>
 
 
 namespace py = pybind11;
 using namespace py::literals;
 
 
-PYBIND11_MODULE(_asyncronizer_ext, module)
+PYBIND11_MODULE(_asynchronizer_ext, module)
 {
-    module.doc() = "dkuk::asyncronizer C++ internals: Python asyncio <-> C++ Boost.Asio bridge";
+    module.doc() = "dkuk::asynchronizer C++ internals: Python asyncio <-> C++ Boost.Asio bridge";
 
-    dkuk::asyncronizer::shared_ptr_managed_class<std::thread>{module, "Thread"}
+    dkuk::asynchronizer::shared_ptr_managed_class<std::thread>{module, "Thread"}
         .def("join", &std::thread::join)
         .def("detach", &std::thread::detach)
         .def("joinable", &std::thread::joinable);
 
-    dkuk::asyncronizer::shared_ptr_managed_class<
+    dkuk::asynchronizer::shared_ptr_managed_class<
         boost::asio::executor_work_guard<boost::asio::io_context::executor_type>
     >{
         module,
@@ -45,7 +45,7 @@ PYBIND11_MODULE(_asyncronizer_ext, module)
             &boost::asio::executor_work_guard<boost::asio::io_context::executor_type>::reset
         );
 
-    dkuk::asyncronizer::shared_ptr_managed_class<boost::asio::io_context>{module, "IoContext"}
+    dkuk::asynchronizer::shared_ptr_managed_class<boost::asio::io_context>{module, "IoContext"}
         .def(py::init())
         .def(py::init<int>())
         .def_property_readonly("stopped", &boost::asio::io_context::stopped)

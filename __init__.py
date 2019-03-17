@@ -1,4 +1,4 @@
-from .asyncronizer import Thread, IoContext, ErrorCategory, ErrorCode, Asyncronizer
+from .asynchronizer import Thread, IoContext, ErrorCategory, ErrorCode, Asynchronizer
 
 
-__all__ = ['Thread', 'IoContext', 'ErrorCategory', 'ErrorCode', 'Asyncronizer']
+__all__ = ['Thread', 'IoContext', 'ErrorCategory', 'ErrorCode', 'Asynchronizer']

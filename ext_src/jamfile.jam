@@ -2,14 +2,21 @@ import ../jam/pybind11 ;
 import ../jam/mypy ;
 
 
-pybind11.python-extension _asyncronizer_ext
+pybind11.python-extension _asynchronizer_ext
     :
         [ glob *.cpp : test_* tool_* ]
         /boost//system/<link>static
     : <define>WITH_THREADS=1
     ;
 
-mypy.python-stub _asyncronizer_ext_stub : _asyncronizer_ext ;
+mypy.python-stub _asynchronizer_ext_stub : _asynchronizer_ext ;
+
+
+install install-ext
+    : _asynchronizer_ext _asynchronizer_ext_stub
+    : <location>"$(ASYNCHRONIZER_PYTHON_SITE_PACKAGES)"
+    ;
+explicit install-ext ;
 
 
 pybind11.python-extension test_async_sleep_ext
@@ -18,17 +25,10 @@ pybind11.python-extension test_async_sleep_ext
         /boost//system/<link>static
     : <define>WITH_THREADS=1
     ;
+explicit test_async_sleep_ext ;
 
-
-install install-ext
-    : _asyncronizer_ext
-    : <location>../build/ext <install-dependencies>on <install-type>LIB
-    ;
-explicit install-ext ;
-
-
-install install-stub
-    : _asyncronizer_ext_stub
+install install-test-async-sleep-ext
+    : test_async_sleep_ext
     : <location>../build/ext
     ;
-explicit install-stub ;
+explicit install-test-async-sleep-ext ;

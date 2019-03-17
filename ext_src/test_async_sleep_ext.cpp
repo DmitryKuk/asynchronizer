@@ -7,7 +7,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
 
-#include <dkuk/asyncronizer/asyncronizer.hpp>
+#include <dkuk/asynchronizer/asynchronizer.hpp>
 
 
 namespace py = pybind11;
@@ -18,7 +18,7 @@ PYBIND11_MODULE(test_async_sleep_ext, module)
 {
     module.doc() = "test_async_sleep_ext module";
 
-    dkuk::asyncronizer::shared_ptr_managed_class<boost::asio::system_timer>{module, "SystemTimer"}
+    dkuk::asynchronizer::shared_ptr_managed_class<boost::asio::system_timer>{module, "SystemTimer"}
         .def(
             py::init(
                 [](std::shared_ptr<boost::asio::io_context> io_context_ptr, double seconds)

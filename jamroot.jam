@@ -1,7 +1,10 @@
 import errors ;
+import feature ;
 import modules ;
 import os ;
 import python ;
+import regex ;
+import toolset ;
 
 
 BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
@@ -21,6 +24,32 @@ if ! [ python.configured ]
 }
 
 
+# Detect Python site-packages directory
+local target-os = [ feature.get-values target-os ] ;
+target-os ?= [ feature.defaults target-os ] ;
+target-os = $(target-os:G=) ;
+
+local toolset-requirements = [ toolset.requirements ] ;
+local python-requirements = [ $(toolset-requirements).get <python> ] ;
+local parsed-python-requirements = [ regex.match "^([0-9]+)\\.([0-9]+),(.+)$" : $(python-requirements) ] ;
+local python-major = $(parsed-python-requirements[1]) ;
+local python-minor = $(parsed-python-requirements[2]) ;
+
+local python-interpreter-pattern = "^<target-os>$(target-os):<python.interpreter>(.+)$" ;
+python-interpreter = [ MATCH "$(python-interpreter-pattern)" : $(parsed-python-requirements[3]) ] ;
+if ! $(python-interpreter)
+{
+    errors.user-error
+        No python interpreter parsed from string: '$(parsed-python-requirements[3])'
+        by pattern '$(python-interpreter-pattern)'
+        ;
+}
+
+local python-site-packages =
+    [ SHELL "$(python-interpreter) -c 'import site; print(site.getsitepackages()[0])'" : strip-eol ] ;
+
+
+path-constant ASYNCHRONIZER_PYTHON_SITE_PACKAGES : $(python-site-packages) ;
 path-constant ASYNCHRONIZER_ROOT : . ;
 
 
@@ -31,19 +60,27 @@ modules.poke : BOOST_BUILD_PATH : "$(ASYNCHRONIZER_ROOT)/jam" [ modules.peek : B
 use-project boost : $(BOOST_ROOT) ;
 
 
-project asyncronizer
+project asynchronizer
 	: build-dir build
 	:
 		requirements
-		<include>include
+		<include>"$(ASYNCHRONIZER_ROOT)/include"
 		<include>$(BOOST_ROOT)
 	;
 
 
 build-project ext_src ;
 
-alias install-ext : ext_src//install-ext ;
-explicit install-ext ;
 
-alias install-stub : ext_src//install-stub ;
-explicit install-stub ;
+alias install : install-py ext_src//install-ext ;
+explicit install ;
+
+install install-py
+	: asynchronizer.py
+	: <location>"$(ASYNCHRONIZER_PYTHON_SITE_PACKAGES)"
+	;
+explicit install-py ;
+
+
+alias install-test-async-sleep-ext : ext_src//install-test-async-sleep-ext ;
+explicit install-test-async-sleep-ext ;

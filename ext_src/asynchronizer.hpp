@@ -1,5 +1,5 @@
-#ifndef DKUK_ASYNCRONIZER_HPP
-#define DKUK_ASYNCRONIZER_HPP
+#ifndef DKUK_ASYNCHRONIZER_HPP
+#define DKUK_ASYNCHRONIZER_HPP
 
 #include <memory>
 
@@ -7,14 +7,14 @@
 
 
 namespace dkuk {
-namespace asyncronizer {
+namespace asynchronizer {
 
 
 template<class T, class... Ts>
 using shared_ptr_managed_class = pybind11::class_<T, std::shared_ptr<T>, Ts...>;
 
 
-};	// namespace asyncronizer
+};	// namespace asynchronizer
 };	// namespace dkuk
 
-#endif	// DKUK_ASYNCRONIZER_HPP
+#endif	// DKUK_ASYNCHRONIZER_HPP

@@ -4,18 +4,19 @@ import functools
 import threading
 from typing import Any, Callable, Optional, MutableSet, List, Tuple
 
-from _asyncronizer_ext import Thread, IoContext, ErrorCategory, ErrorCode
+from _asynchronizer_ext import Thread, IoContext, ErrorCategory, ErrorCode
 
 
-__all__ = ['Thread', 'IoContext', 'ErrorCategory', 'ErrorCode', 'Asyncronizer']
+__all__ = ['Thread', 'IoContext', 'ErrorCategory', 'ErrorCode', 'Asynchronizer']
 
 
-class Asyncronizer:
+class Asynchronizer:
     def __init__(
             self,
             loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         """
+        Initializes Asynchronizer object.
 
         :param loop: Asyncio event loop
         :type loop: Optional[asyncio.AbstractEventLoop]
